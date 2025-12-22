@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3069/3069172.png">
+<title>ZenHabit</title>
+    <title>ZenHabit | True North Edition</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #ffffff; --text: #1e293b; --accent: #4f46e5; --secondary: #94a3b8;
+            --card: #f8fafc; --border: #cbd5e1; --success: #10b981; --danger: #ef4444;
+            --h-0: #f1f5f9; --h-1: #c7d2fe; --h-2: #818cf8; --h-3: #4f46e5; --h-4: #312e81;
+        }
+        [data-theme="dark"] {
+            --bg: #0f172a; --text: #f1f5f9; --card: #1e293b; --border: #334155; --h-0: #1e293b;
+        }
+
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; padding: 20px; }
+        .container { width: 100%; max-width: 900px; }
+        
+        /* Dashboard Header */
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .score-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 25px; }
+        .score-card { background: var(--card); border: 1px solid var(--border); padding: 15px; border-radius: 12px; text-align: center; }
+        .score-val { font-size: 1.4rem; font-weight: 800; color: var(--accent); display: block; }
+        .score-label { font-size: 0.65rem; color: var(--secondary); text-transform: uppercase; font-weight: 700; }
+
+        /* Analytics Section */
+        .stats-wrapper { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 25px; }
+        .tab-menu { display: flex; gap: 8px; margin-bottom: 15px; border-bottom: 1px solid var(--border); overflow-x: auto; padding-bottom: 5px; }
+        .tab-btn { background: none; border: none; color: var(--secondary); cursor: pointer; padding: 8px 10px; font-weight: 600; font-size: 0.75rem; white-space: nowrap; }
+        .tab-btn.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
+
+        /* THE FIXED YEARLY MAP */
+        .heatmap-scroll { overflow-x: auto; padding-bottom: 15px; }
+        .heatmap-wrapper { width: 850px; position: relative; }
+        .month-row { display: grid; grid-template-columns: repeat(53, 1fr); margin-left: 25px; margin-bottom: 5px; }
+        .month-name { font-size: 0.6rem; color: var(--secondary); text-align: left; }
+        
+        .grid-container { display: flex; gap: 8px; }
+        .day-names { display: grid; grid-template-rows: repeat(7, 12px); gap: 3px; font-size: 0.55rem; color: var(--secondary); padding-top: 2px; }
+        
+        .heatmap-grid { 
+            display: grid; 
+            grid-template-rows: repeat(7, 12px); 
+            grid-auto-flow: column; /* This makes days go top-to-bottom */
+            gap: 3px; 
+        }
+        .heat-square { 
+            width: 12px; height: 12px; 
+            background: var(--h-0); 
+            border: 1px solid var(--border); 
+            border-radius: 2px; 
+        }
+        .lv1 { background: var(--h-1); } .lv2 { background: var(--h-2); } 
+        .lv3 { background: var(--h-3); } .lv4 { background: var(--h-4); }
+
+        /* Habit Cards */
+        .habit-item { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 16px; margin-bottom: 20px; }
+        .habit-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .badge { font-size: 0.6rem; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; font-weight: 800; background: var(--border); }
+        
+        .action-row { display: flex; align-items: center; gap: 12px; }
+        .time-input { width: 60px; padding: 5px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); text-align: center; font-size: 0.8rem; }
+
+        .cb-wrapper { position: relative; width: 34px; height: 34px; cursor: pointer; }
+        .cb-wrapper input { opacity: 0; width: 0; height: 0; }
+        .checkmark { position: absolute; top: 0; left: 0; height: 34px; width: 34px; background-color: var(--bg); border: 2px solid var(--border); border-radius: 10px; }
+        .cb-wrapper input:checked ~ .checkmark { background-color: var(--success); border-color: var(--success); }
+        .checkmark:after { content: ""; position: absolute; display: none; left: 12px; top: 6px; width: 7px; height: 14px; border: solid white; border-width: 0 4px 4px 0; transform: rotate(45deg); }
+        .cb-wrapper input:checked ~ .checkmark:after { display: block; }
+
+        .spark-box { height: 60px; margin: 15px 0; }
+        .mini-map { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 10px; }
+        .mini-sq { width: 10px; height: 10px; border: 1px solid var(--border); background: var(--h-0); border-radius: 2px; }
+        .mini-sq.active { background: var(--success); border-color: transparent; }
+
+        /* Input Area */
+        .input-card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 16px; margin-bottom: 25px; }
+        .input-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 0.5fr; gap: 10px; }
+        input, select { padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+        .btn-primary { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 700; }
+
+        @media (max-width: 768px) { .input-grid { grid-template-columns: 1fr; } .score-board { grid-template-columns: 1fr 1fr; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1 id="rank-display" style="margin:0;">Zen Productivity</h1>
+        <button onclick="toggleTheme()" style="background:none; border:none; cursor:pointer; font-size:1.2rem;">🌓</button>
+    </header>
+
+    <div class="score-board">
+        <div class="score-card"><span class="score-val" id="score-today">0%</span><span class="score-label">Today</span></div>
+        <div class="score-card"><span class="score-val" id="score-xp">0</span><span class="score-label">Total XP</span></div>
+        <div class="score-card"><span class="score-val" id="score-hours">0h</span><span class="score-label">Total Hours</span></div>
+        <div class="score-card"><span class="score-val" id="score-count">0</span><span class="score-label">Active Habits</span></div>
+    </div>
+
+    <div class="stats-wrapper">
+        <div class="tab-menu">
+            <button class="tab-btn active" onclick="setStatsTab('weekly', this)">Weekly</button>
+            <button class="tab-btn" onclick="setStatsTab('monthly', this)">Monthly</button>
+            <button class="tab-btn" onclick="setStatsTab('time', this)">Time Analytics</button>
+            <button class="tab-btn" onclick="setStatsTab('subjects', this)">Subject Totals</button>
+            <button class="tab-btn" onclick="setStatsTab('yearly', this)">Yearly Map</button>
+        </div>
+        <div id="chart-host"><canvas id="overallChart" style="max-height: 220px;"></canvas></div>
+        
+        <div id="heatmap-host" class="heatmap-scroll" style="display:none">
+            <div class="heatmap-wrapper">
+                <div class="month-row" id="month-labels"></div>
+                <div class="grid-container">
+                    <div class="day-names"><span>Sun</span><span></span><span>Tue</span><span></span><span>Thu</span><span></span><span>Sat</span></div>
+                    <div class="heatmap-grid" id="year-grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="input-card">
+        <div class="input-grid">
+            <input type="text" id="name-in" placeholder="Habit name...">
+            <select id="cat-in" onchange="handleCatChange()">
+                <option>Study</option><option>Health</option><option>Personal</option>
+            </select>
+            <select id="sub-in">
+                <option value="">- Subject -</option>
+                <option>Physics</option><option>Chemistry</option><option>Math</option>
+            </select>
+            <select id="goal-in"><option value="7">7x/wk</option><option value="5">5x/wk</option></select>
+            <button class="btn-primary" onclick="addHabit()">Add</button>
+        </div>
+    </div>
+
+    <div id="habit-list"></div>
+</div>
+
+<script>
+    let habits = JSON.parse(localStorage.getItem('zen_v15')) || [];
+    let currentTab = 'weekly';
+    let mainChart = null;
+    let sparklines = {};
+
+    function save() {
+        localStorage.setItem('zen_v15', JSON.stringify(habits));
+        refreshUI();
+    }
+
+    function handleCatChange() {
+        document.getElementById('sub-in').style.display = (document.getElementById('cat-in').value === 'Study') ? 'block' : 'none';
+    }
+
+    function addHabit() {
+        const name = document.getElementById('name-in').value.trim();
+        if (!name) return;
+        habits.push({
+            id: 'h' + Date.now(),
+            name,
+            category: document.getElementById('cat-in').value,
+            subject: document.getElementById('cat-in').value === 'Study' ? document.getElementById('sub-in').value : "",
+            goal: parseInt(document.getElementById('goal-in').value),
+            completions: [],
+            timeLogs: {}
+        });
+        document.getElementById('name-in').value = '';
+        save();
+    }
+
+    function refreshUI() {
+        const list = document.getElementById('habit-list');
+        const today = new Date().toISOString().split('T')[0];
+        Object.values(sparklines).forEach(c => c.destroy());
+        sparklines = {};
+
+        list.innerHTML = habits.map(h => {
+            const isDone = h.completions.includes(today);
+            const hrs = h.timeLogs[today] || 0;
+            return `
+            <div class="habit-item">
+                <div class="habit-header">
+                    <div>
+                        <span class="badge">${h.subject || h.category}</span>
+                        <h3 style="margin: 5px 0;">${h.name}</h3>
+                    </div>
+                    <div class="action-row">
+                        <div style="text-align:center">
+                            <div style="font-size:0.5rem; font-weight:800; color:var(--secondary)">HOURS</div>
+                            <input type="number" class="time-input" value="${hrs}" onchange="logTime('${h.id}', this.value)" min="0" step="0.5">
+                        </div>
+                        <label class="cb-wrapper">
+                            <input type="checkbox" ${isDone ? 'checked' : ''} onchange="toggleHabit('${h.id}')">
+                            <span class="checkmark"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="spark-box"><canvas id="spark-${h.id}"></canvas></div>
+                <div class="mini-map">
+                    ${[...Array(70)].map((_, i) => {
+                        const d = new Date(); d.setDate(d.getDate() - (69 - i));
+                        const active = h.completions.includes(d.toISOString().split('T')[0]);
+                        return `<div class="mini-sq ${active ? 'active' : ''}"></div>`;
+                    }).join('')}
+                </div>
+                <button onclick="deleteHabit('${h.id}')" style="margin-top:15px; background:none; border:none; color:var(--danger); font-size:0.7rem; font-weight:700; cursor:pointer">Delete</button>
+            </div>`;
+        }).join('');
+
+        habits.forEach(h => renderSpark(h));
+        renderOverallStats();
+        updateScoreboard();
+    }
+
+    function renderSpark(h) {
+        const ctx = document.getElementById(`spark-${h.id}`).getContext('2d');
+        const data = [...Array(14)].map((_, i) => {
+            const d = new Date(); d.setDate(d.getDate() - (13 - i));
+            return h.completions.includes(d.toISOString().split('T')[0]) ? 1 : 0;
+        });
+        sparklines[h.id] = new Chart(ctx, {
+            type: 'line',
+            data: { labels: data, datasets: [{ data, borderColor: '#4f46e5', tension: 0.4, fill: true, backgroundColor: 'rgba(79,70,229,0.1)', pointRadius: 0 }] },
+            options: { plugins: { legend: false, tooltip: false }, scales: { x: { display: false }, y: { display: false, max: 1.2 } }, maintainAspectRatio: false }
+        });
+    }
+
+    function renderHeatmap() {
+        const grid = document.getElementById('year-grid');
+        const labels = document.getElementById('month-labels');
+        grid.innerHTML = ''; labels.innerHTML = '';
+        
+        const year = new Date().getFullYear();
+        const start = new Date(year, 0, 1);
+        const startDay = start.getDay(); // Jan 1st day of week
+        
+        // Month Labels
+        const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        monthNames.forEach(m => labels.innerHTML += `<div class="month-name" style="grid-column: span ${m === 'Jan' ? 5 : 4}">${m}</div>`);
+
+        // Create Grid Squares (53 weeks * 7 days)
+        for (let i = 0; i < 371; i++) {
+            const d = new Date(year, 0, 1 - startDay + i);
+            const ds = d.toISOString().split('T')[0];
+            const isThisYear = d.getFullYear() === year;
+            const count = habits.filter(h => h.completions.includes(ds)).length;
+            
+            let lv = (isThisYear && count > 0) ? `lv${Math.min(count, 4)}` : '';
+            grid.innerHTML += `<div class="heat-square ${lv}" title="${ds}" style="${!isThisYear ? 'visibility:hidden' : ''}"></div>`;
+        }
+    }
+
+    function renderMainChart() {
+        const ctx = document.getElementById('overallChart').getContext('2d');
+        if (mainChart) mainChart.destroy();
+        let labels = [], data = [], type = 'line';
+
+        if (currentTab === 'weekly') {
+            labels = [...Array(7)].map((_, i) => { const d = new Date(); d.setDate(d.getDate() - (6 - i)); return d.toLocaleDateString('en-US', { weekday: 'short' }); });
+            data = labels.map((_, i) => { const d = new Date(); d.setDate(d.getDate() - (6 - i)); return habits.filter(h => h.completions.includes(d.toISOString().split('T')[0])).length; });
+        } else if (currentTab === 'monthly') {
+            labels = [...Array(30)].map((_, i) => { const d = new Date(); d.setDate(d.getDate() - (29 - i)); return d.getDate(); });
+            data = labels.map((_, i) => { const d = new Date(); d.setDate(d.getDate() - (29 - i)); return habits.filter(h => h.completions.includes(d.toISOString().split('T')[0])).length; });
+        } else if (currentTab === 'time') {
+            labels = [...Array(7)].map((_, i) => { const d = new Date(); d.setDate(d.getDate() - (6 - i)); return d.toLocaleDateString('en-US', { weekday: 'short' }); });
+            data = labels.map((_, i) => {
+                const d = new Date(); d.setDate(d.getDate() - (6 - i));
+                const ds = d.toISOString().split('T')[0];
+                return habits.reduce((acc, h) => acc + (h.timeLogs[ds] || 0), 0);
+            });
+        } else {
+            type = 'bar'; labels = ['Physics', 'Chemistry', 'Math'];
+            data = labels.map(s => habits.filter(h => h.subject === s).reduce((acc, h) => acc + h.completions.length, 0));
+        }
+
+        mainChart = new Chart(ctx, {
+            type,
+            data: { labels, datasets: [{ data, borderColor: '#4f46e5', backgroundColor: 'rgba(79,70,229,0.1)', fill: true, tension: 0.4 }] },
+            options: { plugins: { legend: false }, scales: { y: { beginAtZero: true } } }
+        });
+    }
+
+    function renderOverallStats() {
+        const c = document.getElementById('chart-host');
+        const h = document.getElementById('heatmap-host');
+        if (currentTab === 'yearly') { c.style.display = 'none'; h.style.display = 'block'; renderHeatmap(); }
+        else { c.style.display = 'block'; h.style.display = 'none'; renderMainChart(); }
+    }
+
+    function toggleHabit(id) {
+        const h = habits.find(x => x.id === id);
+        const today = new Date().toISOString().split('T')[0];
+        const idx = h.completions.indexOf(today);
+        idx > -1 ? h.completions.splice(idx, 1) : h.completions.push(today);
+        save();
+    }
+
+    function logTime(id, val) {
+        const h = habits.find(x => x.id === id);
+        const today = new Date().toISOString().split('T')[0];
+        h.timeLogs[today] = parseFloat(val) || 0;
+        if (h.timeLogs[today] > 0 && !h.completions.includes(today)) h.completions.push(today);
+        save();
+    }
+
+    function updateScoreboard() {
+        const today = new Date().toISOString().split('T')[0];
+        const done = habits.filter(h => h.completions.includes(today)).length;
+        const hours = habits.reduce((acc, h) => acc + Object.values(h.timeLogs).reduce((a,b) => a+b, 0), 0);
+        document.getElementById('score-today').innerText = habits.length ? Math.round(done/habits.length*100) + '%' : '0%';
+        document.getElementById('score-xp').innerText = (habits.reduce((acc,h)=>acc+h.completions.length,0)*50).toLocaleString();
+        document.getElementById('score-hours').innerText = hours.toFixed(1) + 'h';
+        document.getElementById('score-count').innerText = habits.length;
+    }
+
+    function setStatsTab(t, btn) {
+        currentTab = t;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderOverallStats();
+    }
+
+    function deleteHabit(id) { if(confirm('Delete?')) { habits = habits.filter(h => h.id !== id); save(); } }
+    function toggleTheme() {
+        const t = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.body.setAttribute('data-theme', t);
+        localStorage.setItem('zen_theme', t);
+    }
+    if (localStorage.getItem('zen_theme') === 'dark') document.body.setAttribute('data-theme', 'dark');
+    handleCatChange();
+    refreshUI();
+</script>
+</body>
+</html>
