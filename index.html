@@ -2,9 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <!-- iPad App Settings -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-title" content="To-Do List">
+    
+    <!-- Professional App Icon (Embedded SVG) -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDE4MCAxODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiByeD0iNDAiIGZpbGw9IiM0RjQ2RTUiLz4KPHBhdGggZD0iTTUwIDkwTDgwIDEyMEwxMzAgNjAiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMTYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4=">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>To-Do List | Deep Analytics</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -18,10 +24,17 @@
         }
 
         * { box-sizing: border-box; font-family: 'Inter', -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; justify-content: center; transition: 0.2s; overscroll-behavior: none; }
+        
+        /* iPad Full-Screen Adjustments */
+        body { 
+            background: var(--bg); color: var(--text); margin: 0; padding: 20px; 
+            padding-top: env(safe-area-inset-top); 
+            display: flex; justify-content: center; transition: 0.2s; overscroll-behavior: none; 
+        }
+        
         .container { width: 100%; max-width: 850px; padding-bottom: 50px; }
         
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-top: 10px; }
         .nav-switch { display: flex; background: var(--card); padding: 4px; border-radius: 12px; border: 1px solid var(--border); }
         .nav-btn { padding: 8px 20px; border: none; border-radius: 9px; cursor: pointer; font-weight: 700; font-size: 0.85rem; background: transparent; color: var(--secondary); transition: 0.2s; }
         .nav-btn.active { background: var(--bg); color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
@@ -91,16 +104,28 @@
         <div class="score-card"><span class="score-v" id="score-streak">0</span><span class="score-l">Streak</span></div>
     </div>
 
+    <!-- MAIN TASKS TAB -->
     <div id="tab-tasks">
         <div class="input-bar">
             <input type="text" id="in-name" placeholder="New goal...">
-            <select id="in-cat"><option>Study</option><option value="Q Practice">Q Practice</option><option>Health</option><option>Personal</option></select>
-            <select id="in-sub"><option>Physics</option><option>Chemistry</option><option>Math</option><option>Other</option></select>
+            <select id="in-cat">
+                <option>Study</option>
+                <option value="Q Practice">Q Practice</option>
+                <option>Health</option>
+                <option>Personal</option>
+            </select>
+            <select id="in-sub">
+                <option>Physics</option>
+                <option>Chemistry</option>
+                <option>Math</option>
+                <option>Other</option>
+            </select>
             <button class="add-btn" onclick="addHabit()">+</button>
         </div>
         <div id="list"></div>
     </div>
 
+    <!-- STATS TAB -->
     <div id="tab-stats" class="hidden">
         <div class="chart-card">
             <div class="chart-header"><span class="chart-label">Yearly Consistency Map</span></div>
@@ -121,19 +146,18 @@
 </div>
 
 <script>
-    // Helper: Local Date String to fix UTC bug
     const getTodayStr = (date = new Date()) => {
         const offset = date.getTimezoneOffset();
         const adjustedDate = new Date(date.getTime() - (offset * 60 * 1000));
         return adjustedDate.toISOString().split('T')[0];
     };
 
-    let habits = JSON.parse(localStorage.getItem('todo_v31')) || [];
+    let habits = JSON.parse(localStorage.getItem('todo_v32')) || [];
     const colors = { Physics: '#3b82f6', Chemistry: '#10b981', Math: '#f43f5e', Other: '#64748b' };
     let activeCharts = {};
 
     function save() { 
-        localStorage.setItem('todo_v31', JSON.stringify(habits)); 
+        localStorage.setItem('todo_v32', JSON.stringify(habits)); 
         render(); 
     }
 
@@ -219,10 +243,8 @@
 
     function renderCharts() {
         const selectedMonth = parseInt(document.getElementById('month-filter').value);
-        const now = new Date();
-        const year = now.getFullYear();
+        const year = new Date().getFullYear();
 
-        // 1. Yearly Map
         const grid = document.getElementById('dot-grid'); grid.innerHTML = '';
         for (let i = 0; i < 365; i++) {
             const d = new Date(year, 0, 1); d.setDate(d.getDate() + i);
@@ -230,7 +252,6 @@
             grid.innerHTML += `<div class="dot" style="background:${count > 0 ? 'var(--accent)' : 'var(--h0)'}; opacity:${count > 0 ? 0.3 + (count * 0.2) : 1}"></div>`;
         }
 
-        // 2. Monthly Completion
         const daysInMonth = new Date(year, selectedMonth + 1, 0).getDate();
         const mLabels = Array.from({length: daysInMonth}, (_, i) => i + 1);
         const mData = mLabels.map(day => {
@@ -239,7 +260,6 @@
         });
         drawChart('chart-monthly', 'line', mLabels, mData, '#8b5cf6');
 
-        // 3. Subject Statistics
         const subHours = { Physics: 0, Chemistry: 0, Math: 0, Other: 0 };
         const subQs = { Physics: 0, Chemistry: 0, Math: 0, Other: 0 };
         
@@ -293,8 +313,7 @@
         let s = 0; let d = new Date();
         while(true) {
             let ds = getTodayStr(d);
-            const dayDone = habits.some(h => h.completions.includes(ds));
-            if (dayDone) { s++; d.setDate(d.getDate()-1); }
+            if (habits.some(h => h.completions.includes(ds))) { s++; d.setDate(d.getDate()-1); }
             else break;
         }
         return s;
@@ -311,12 +330,11 @@
     function populateMonthFilter() {
         const select = document.getElementById('month-filter');
         const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-        const now = new Date();
-        select.innerHTML = months.map((m, i) => `<option value="${i}" ${i === now.getMonth() ? 'selected' : ''}>${m}</option>`).join('');
+        select.innerHTML = months.map((m, i) => `<option value="${i}" ${i === new Date().getMonth() ? 'selected' : ''}>${m}</option>`).join('');
     }
 
     function editH(id, k, v) { habits.find(x => x.id === id)[k] = v; save(); }
-    function delH(id) { if(confirm('Delete permanently?')) { habits = habits.filter(x => x.id !== id); save(); } }
+    function delH(id) { if(confirm('Delete?')) { habits = habits.filter(x => x.id !== id); save(); } }
     
     function toggleTheme() {
         const t = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
