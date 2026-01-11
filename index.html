@@ -1,449 +1,396 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <!-- iPad App Settings -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="To-Do List">
+    <meta charset="UTF-8">
+    <!-- iPad App Settings -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="To-Do List">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>To-Do List | Deep Analytics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #ffffff; --text: #0f172a; --accent: #4f46e5; --secondary: #64748b;
+            --card: #f8fafc; --border: #e2e8f0; --success: #10b981; --danger: #ef4444; 
+            --warning: #f59e0b; --h0: #f1f5f9; --h4: #4f46e5;
+        }
+        [data-theme="dark"] {
+            --bg: #0f172a; --text: #f1f5f9; --card: #1e293b; --border: #334155; --h0: #334155;
+        }
 
-    <link rel="apple-touch-icon" href="icon.png">
-    <link rel="icon" type="image/png" href="icon.png">
-    
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>To-Do List | Deep Analytics</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --bg: #ffffff; --text: #0f172a; --accent: #4f46e5; --secondary: #64748b;
-            --card: #f8fafc; --border: #e2e8f0; --success: #10b981; --danger: #ef4444; 
-            --warning: #f59e0b; --h0: #f1f5f9; --h4: #4f46e5;
-        }
-        [data-theme="dark"] {
-            --bg: #0f172a; --text: #f1f5f9; --card: #1e293b; --border: #334155; --h0: #334155;
-        }
+        * { box-sizing: border-box; font-family: 'Inter', -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background: var(--bg); color: var(--text); margin: 0; padding: 20px; 
+            padding-top: env(safe-area-inset-top); 
+            display: flex; justify-content: center; transition: 0.2s; overscroll-behavior: none; 
+        }
+        
+        .container { width: 100%; max-width: 850px; padding-bottom: 50px; }
+        
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-top: 10px; }
+        .nav-switch { display: flex; background: var(--card); padding: 4px; border-radius: 12px; border: 1px solid var(--border); }
+        .nav-btn { padding: 8px 20px; border: none; border-radius: 9px; cursor: pointer; font-weight: 700; font-size: 0.85rem; background: transparent; color: var(--secondary); transition: 0.2s; }
+        .nav-btn.active { background: var(--bg); color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
 
-        * { box-sizing: border-box; font-family: 'Inter', -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
-        
-        body { 
-            background: var(--bg); color: var(--text); margin: 0; padding: 20px; 
-            padding-top: env(safe-area-inset-top); 
-            display: flex; justify-content: center; transition: 0.2s; overscroll-behavior: none; 
-        }
-        
-        .container { width: 100%; max-width: 850px; padding-bottom: 50px; }
-        
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-top: 10px; }
-        .nav-switch { display: flex; background: var(--card); padding: 4px; border-radius: 12px; border: 1px solid var(--border); }
-        .nav-btn { padding: 8px 20px; border: none; border-radius: 9px; cursor: pointer; font-weight: 700; font-size: 0.85rem; background: transparent; color: var(--secondary); transition: 0.2s; }
-        .nav-btn.active { background: var(--bg); color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .score-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 25px; }
+        .score-card { background: var(--card); padding: 15px 10px; border-radius: 16px; border: 1px solid var(--border); text-align: center; }
+        .score-v { font-size: 1.2rem; font-weight: 800; color: var(--accent); display: block; }
+        .score-l { font-size: 0.6rem; color: var(--secondary); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; }
 
-        .score-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 25px; }
-        .score-card { background: var(--card); padding: 15px 10px; border-radius: 16px; border: 1px solid var(--border); text-align: center; }
-        .score-v { font-size: 1.2rem; font-weight: 800; color: var(--accent); display: block; }
-        .score-l { font-size: 0.6rem; color: var(--secondary); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; }
+        .chart-card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 20px; margin-bottom: 20px; }
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .chart-label { font-size: 0.75rem; font-weight: 800; color: var(--secondary); text-transform: uppercase; }
 
-        .chart-card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 20px; margin-bottom: 20px; }
-        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .chart-label { font-size: 0.75rem; font-weight: 800; color: var(--secondary); text-transform: uppercase; }
+        .month-select { padding: 6px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 0.8rem; font-weight: 600; outline: none; }
 
-        .month-select { padding: 6px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 0.8rem; font-weight: 600; outline: none; }
+        .dot-grid-wrapper { overflow-x: auto; padding-bottom: 10px; }
+        .dot-grid { display: grid; grid-template-rows: repeat(7, 12px); grid-auto-flow: column; gap: 4px; width: max-content; }
+        .dot { width: 12px; height: 12px; border-radius: 3px; background: var(--h0); }
 
-        .dot-grid-wrapper { overflow-x: auto; padding-bottom: 10px; }
-        .dot-grid { display: grid; grid-template-rows: repeat(7, 12px); grid-auto-flow: column; gap: 4px; width: max-content; }
-        .dot { width: 12px; height: 12px; border-radius: 3px; background: var(--h0); }
+        .habit-card { background: var(--card); border: 1px solid var(--border); padding: 18px; border-radius: 20px; margin-bottom: 15px; border-left: 6px solid var(--border); transition: 0.2s; }
+        .subject-badge { font-size: 0.65rem; font-weight: 900; text-transform: uppercase; margin-bottom: 6px; display: inline-block; padding: 2px 0; }
+        
+        .section-title { font-size: 0.85rem; font-weight: 800; color: var(--secondary); text-transform: uppercase; letter-spacing: 1px; margin: 30px 0 10px 5px; border-bottom: 2px solid var(--border); padding-bottom: 5px; display: inline-block; }
+        
+        /* Updated Controls Layout */
+        .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+        .day-group { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 12px; border: 1px solid var(--border); }
+        .day-group.yest { background: rgba(0,0,0,0.03); }
+        .day-group-label { font-size: 0.6rem; font-weight: 800; color: var(--secondary); writing-mode: vertical-lr; transform: rotate(180deg); text-align: center; margin-right: 2px; height: 35px; }
 
-        .habit-card { background: var(--card); border: 1px solid var(--border); padding: 18px; border-radius: 20px; margin-bottom: 15px; border-left: 6px solid var(--border); transition: 0.2s; }
-        .subject-badge { font-size: 0.65rem; font-weight: 900; text-transform: uppercase; margin-bottom: 6px; display: inline-block; padding: 2px 0; }
-        
-        .section-title { font-size: 0.85rem; font-weight: 800; color: var(--secondary); text-transform: uppercase; letter-spacing: 1px; margin: 30px 0 10px 5px; border-bottom: 2px solid var(--border); padding-bottom: 5px; display: inline-block; }
-        
-        /* Updated Controls Layout */
-        .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
-        .day-group { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 12px; border: 1px solid var(--border); }
-        .day-group.yest { background: rgba(0,0,0,0.03); }
-        .day-group-label { font-size: 0.6rem; font-weight: 800; color: var(--secondary); writing-mode: vertical-lr; transform: rotate(180deg); text-align: center; margin-right: 2px; height: 35px; }
+        .control-item { text-align: center; }
+        .num-input { width: 45px; padding: 6px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); text-align: center; font-size: 0.85rem; font-weight: 700; }
+        .score-tiny { font-size: 0.55rem; color: var(--secondary); text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 2px;}
 
-        .control-item { text-align: center; }
-        .num-input { width: 45px; padding: 6px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); text-align: center; font-size: 0.85rem; font-weight: 700; }
-        .score-tiny { font-size: 0.55rem; color: var(--secondary); text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 2px;}
+        .input-bar { display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 10px; background: var(--card); padding: 18px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 25px; }
+        .input-bar input, .input-bar select { padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 0.9rem; font-weight: 500; outline: none; }
+        .add-btn { background: var(--accent); color: white; border: none; border-radius: 12px; width: 48px; cursor: pointer; font-size: 1.2rem; font-weight: bold; }
 
-        .input-bar { display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 10px; background: var(--card); padding: 18px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 25px; }
-        .input-bar input, .input-bar select { padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 0.9rem; font-weight: 500; outline: none; }
-        .add-btn { background: var(--accent); color: white; border: none; border-radius: 12px; width: 48px; cursor: pointer; font-size: 1.2rem; font-weight: bold; }
+        .edit-panel { display: none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border); gap: 10px; align-items: center; flex-wrap: wrap; }
+        .edit-panel.active { display: flex; }
 
-        .edit-panel { display: none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border); gap: 10px; align-items: center; flex-wrap: wrap; }
-        .edit-panel.active { display: flex; }
+        .cb { position: relative; width: 30px; height: 30px; cursor: pointer; display: block; margin: 0 auto; }
+        .cb input { opacity: 0; width: 0; height: 0; }
+        .ck { position: absolute; top: 0; left: 0; height: 30px; width: 30px; background: var(--bg); border: 2.5px solid var(--border); border-radius: 8px; transition: 0.2s; }
+        .cb input:checked ~ .ck { background: var(--success); border-color: var(--success); }
+        .cb.yest input:checked ~ .ck { background: var(--warning); border-color: var(--warning); }
+        .ck:after { content: ""; position: absolute; display: none; left: 9px; top: 4px; width: 6px; height: 13px; border: solid white; border-width: 0 3px 3px 0; transform: rotate(45deg); }
+        .cb input:checked ~ .ck:after { display: block; }
 
-        .cb { position: relative; width: 30px; height: 30px; cursor: pointer; display: block; margin: 0 auto; }
-        .cb input { opacity: 0; width: 0; height: 0; }
-        .ck { position: absolute; top: 0; left: 0; height: 30px; width: 30px; background: var(--bg); border: 2.5px solid var(--border); border-radius: 8px; transition: 0.2s; }
-        .cb input:checked ~ .ck { background: var(--success); border-color: var(--success); }
-        .cb.yest input:checked ~ .ck { background: var(--warning); border-color: var(--warning); }
-        .ck:after { content: ""; position: absolute; display: none; left: 9px; top: 4px; width: 6px; height: 13px; border: solid white; border-width: 0 3px 3px 0; transform: rotate(45deg); }
-        .cb input:checked ~ .ck:after { display: block; }
-
-        .hidden { display: none !important; }
-        @media (max-width: 650px) { 
-            .input-bar { grid-template-columns: 1fr; } 
-            .score-grid { grid-template-columns: 1fr 1fr; }
-            .habit-header { flex-direction: column; align-items: flex-start !important; gap: 10px; }
-            .controls { justify-content: flex-start; width: 100%; }
-        }
-    </style>
+        .hidden { display: none !important; }
+        @media (max-width: 650px) { 
+            .input-bar { grid-template-columns: 1fr; } 
+            .score-grid { grid-template-columns: 1fr 1fr; }
+            .habit-header { flex-direction: column; align-items: flex-start !important; gap: 10px; }
+            .controls { justify-content: flex-start; width: 100%; }
+        }
+    </style>
 </head>
 <body>
 
 <div class="container">
-    <header>
-        <h1 style="margin:0; font-weight: 800; letter-spacing: -1px;">To-Do List</h1>
-        <div class="nav-switch">
-            <button class="nav-btn active" onclick="showTab('tasks', this)">Tasks</button>
-            <button class="nav-btn" onclick="showTab('stats', this)">Stats</button>
-        </div>
-        <button onclick="toggleTheme()" style="background:var(--card); border:1px solid var(--border); cursor:pointer; font-size:1rem; padding: 8px; border-radius: 12px;">🌓</button>
-    </header>
+    <header>
+        <h1 style="margin:0; font-weight: 800; letter-spacing: -1px;">To-Do List</h1>
+        <div class="nav-switch">
+            <button class="nav-btn active" onclick="showTab('tasks', this)">Tasks</button>
+            <button class="nav-btn" onclick="showTab('stats', this)">Stats</button>
+        </div>
+        <button onclick="toggleTheme()" style="background:var(--card); border:1px solid var(--border); cursor:pointer; font-size:1rem; padding: 8px; border-radius: 12px;">🌓</button>
+    </header>
 
-    <div class="score-grid">
-        <div class="score-card"><span class="score-v" id="score-day">0%</span><span class="score-l">Today</span></div>
-        <div class="score-card"><span class="score-v" id="score-qs">0</span><span class="score-l">Total Qs</span></div>
-        <div class="score-card"><span class="score-v" id="score-hrs">0</span><span class="score-l">Total Hrs</span></div>
-        <div class="score-card"><span class="score-v" id="score-streak">0</span><span class="score-l">Streak</span></div>
-    </div>
+    <div class="score-grid">
+        <div class="score-card"><span class="score-v" id="score-day">0%</span><span class="score-l">Today</span></div>
+        <div class="score-card"><span class="score-v" id="score-qs">0</span><span class="score-l">Total Qs</span></div>
+        <div class="score-card"><span class="score-v" id="score-hrs">0</span><span class="score-l">Total Hrs</span></div>
+        <div class="score-card"><span class="score-v" id="score-streak">0</span><span class="score-l">Streak</span></div>
+    </div>
 
-    <!-- MAIN TASKS TAB -->
-    <div id="tab-tasks">
-        <div class="input-bar">
-            <input type="text" id="in-name" placeholder="New goal...">
-            <select id="in-cat">
-                <option>Study</option>
-                <option value="Q Practice">Q Practice</option>
-                <option>Health</option>
-                <option>Personal</option>
-            </select>
-            <select id="in-sub">
-                <option>Physics</option>
-                <option>Chemistry</option>
-                <option>Math</option>
-                <option>Other</option>
-            </select>
-            <button class="add-btn" onclick="addHabit()">+</button>
-        </div>
-        <div id="list"></div>
-    </div>
+    <!-- MAIN TASKS TAB -->
+    <div id="tab-tasks">
+        <div class="input-bar">
+            <input type="text" id="in-name" placeholder="New goal...">
+            <select id="in-cat">
+                <option>Study</option>
+                <option value="Q Practice">Q Practice</option>
+                <option>Health</option>
+                <option>Personal</option>
+            </select>
+            <select id="in-sub">
+                <option>Physics</option>
+                <option>Chemistry</option>
+                <option>Math</option>
+                <option>Other</option>
+            </select>
+            <button class="add-btn" onclick="addHabit()">+</button>
+        </div>
+        <div id="list"></div>
+    </div>
 
-    <!-- STATS TAB -->
-    <div id="tab-stats" class="hidden">
-        <div class="chart-card">
-            <div class="chart-header"><span class="chart-label">Yearly Consistency Map</span></div>
-            <div class="dot-grid-wrapper"><div id="dot-grid" class="dot-grid"></div></div>
-        </div>
+    <!-- STATS TAB -->
+    <div id="tab-stats" class="hidden">
+        <div class="chart-card">
+            <div class="chart-header"><span class="chart-label">Yearly Consistency Map</span></div>
+            <div class="dot-grid-wrapper"><div id="dot-grid" class="dot-grid"></div></div>
+        </div>
 
-        <div class="chart-card">
-            <div class="chart-header">
-                <span class="chart-label">Monthly Analytics</span>
-                <select id="month-filter" class="month-select" onchange="renderCharts()"></select>
-            </div>
-            <canvas id="chart-monthly"></canvas>
-        </div>
+        <div class="chart-card">
+            <div class="chart-header">
+                <span class="chart-label">Monthly Analytics</span>
+                <select id="month-filter" class="month-select" onchange="renderCharts()"></select>
+            </div>
+            <canvas id="chart-monthly"></canvas>
+        </div>
 
-        <div class="chart-card"><span class="chart-label">Monthly Subject Hours</span><canvas id="chart-time"></canvas></div>
-        <div class="chart-card"><span class="chart-label">Monthly Subject Questions</span><canvas id="chart-qs"></canvas></div>
-    </div>
+        <div class="chart-card"><span class="chart-label">Monthly Subject Hours</span><canvas id="chart-time"></canvas></div>
+        <div class="chart-card"><span class="chart-label">Monthly Subject Questions</span><canvas id="chart-qs"></canvas></div>
+    </div>
 </div>
 
 <script>
-    const getTodayStr = (date = new Date()) => {
-        const offset = date.getTimezoneOffset();
-        const adjustedDate = new Date(date.getTime() - (offset * 60 * 1000));
-        return adjustedDate.toISOString().split('T')[0];
-    };
+    const getTodayStr = (date = new Date()) => {
+        const offset = date.getTimezoneOffset();
+        const adjustedDate = new Date(date.getTime() - (offset * 60 * 1000));
+        return adjustedDate.toISOString().split('T')[0];
+    };
 
-    let habits = JSON.parse(localStorage.getItem('todo_v32')) || [];
-    const colors = { Physics: '#3b82f6', Chemistry: '#10b981', Math: '#f43f5e', Other: '#64748b' };
-    let activeCharts = {};
+    let habits = JSON.parse(localStorage.getItem('todo_v32')) || [];
+    const colors = { Physics: '#3b82f6', Chemistry: '#10b981', Math: '#f43f5e', Other: '#64748b' };
+    let activeCharts = {};
 
-    function save() { 
-        localStorage.setItem('todo_v32', JSON.stringify(habits)); 
-        render(); 
-    }
+    function save() { 
+        localStorage.setItem('todo_v32', JSON.stringify(habits)); 
+        render(); 
+    }
 
-    function addHabit() {
-        const name = document.getElementById('in-name').value;
-        if (!name) return;
-        habits.push({
-            id: 'h' + Date.now(),
-            name,
-            category: document.getElementById('in-cat').value,
-            subject: document.getElementById('in-sub').value,
-            completions: [], timeLogs: {}, qLogs: {}
-        });
-        document.getElementById('in-name').value = '';
-        save();
-    }
+    function addHabit() {
+        const name = document.getElementById('in-name').value;
+        if (!name) return;
+        habits.push({
+            id: 'h' + Date.now(),
+            name,
+            category: document.getElementById('in-cat').value,
+            subject: document.getElementById('in-sub').value,
+            completions: [], timeLogs: {}, qLogs: {}
+        });
+        document.getElementById('in-name').value = '';
+        save();
+    }
 
-    function render() {
-        const list = document.getElementById('list');
-        const todayStr = getTodayStr();
-        const yest = new Date(); yest.setDate(yest.getDate() - 1);
-        const yestStr = getTodayStr(yest);
+    function render() {
+        const list = document.getElementById('list');
+        const todayStr = getTodayStr();
+        const yest = new Date(); yest.setDate(yest.getDate() - 1);
+        const yestStr = getTodayStr(yest);
 
-        // Define HTML Generator for a single card
-        const createCard = (h) => {
-            const subCol = colors[h.subject] || colors.Other;
-            const isPers = h.category === 'Personal';
-            
-            return `
-            <div class="habit-card" style="border-left-color: ${subCol}">
-                <div class="habit-header" style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="flex:1">
-                        <span class="subject-badge" style="color:${subCol}">${h.subject}</span>
-                        <h3 style="margin:0; font-size:1.05rem;">${h.name}</h3>
-                    </div>
-                    <div class="controls">
-                        <!-- YESTERDAY GROUP -->
-                        <div class="day-group yest">
-                            <span class="day-group-label">YEST</span>
-                            ${!isPers ? `
-                            <div class="control-item"><span class="score-tiny">Hrs</span>
-                                <input type="number" step="0.5" class="num-input" value="${h.timeLogs[yestStr] || 0}" onchange="logVal('${h.id}', 'time', this.value, '${yestStr}')">
-                            </div>` : ''}
-                            ${h.category === 'Q Practice' ? `
-                            <div class="control-item"><span class="score-tiny">Qs</span>
-                                <input type="number" class="num-input" value="${h.qLogs[yestStr] || 0}" onchange="logVal('${h.id}', 'q', this.value, '${yestStr}')">
-                            </div>` : ''}
-                            <div class="control-item"><span class="score-tiny">Done</span>
-                                <label class="cb yest"><input type="checkbox" ${h.completions.includes(yestStr)?'checked':''} onchange="toggle('${h.id}','${yestStr}')"><span class="ck"></span></label>
-                            </div>
-                        </div>
+        // Define HTML Generator for a single card
+        const createCard = (h) => {
+            const subCol = colors[h.subject] || colors.Other;
+            return `
+            <div class="habit-card" style="border-left-color: ${subCol}">
+                <div class="habit-header" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="flex:1">
+                        <span class="subject-badge" style="color:${subCol}">${h.subject}</span>
+                        <h3 style="margin:0; font-size:1.05rem;">${h.name}</h3>
+                    </div>
+                    <div class="controls">
+                        <!-- YESTERDAY GROUP -->
+                        <div class="day-group yest">
+                            <span class="day-group-label">YEST</span>
+                            <div class="control-item"><span class="score-tiny">Hrs</span>
+                                <input type="number" step="0.5" class="num-input" value="${h.timeLogs[yestStr] || 0}" onchange="logVal('${h.id}', 'time', this.value, '${yestStr}')">
+                            </div>
+                            ${h.category === 'Q Practice' ? `
+                            <div class="control-item"><span class="score-tiny">Qs</span>
+                                <input type="number" class="num-input" value="${h.qLogs[yestStr] || 0}" onchange="logVal('${h.id}', 'q', this.value, '${yestStr}')">
+                            </div>` : ''}
+                            <div class="control-item"><span class="score-tiny">Done</span>
+                                <label class="cb yest"><input type="checkbox" ${h.completions.includes(yestStr)?'checked':''} onchange="toggle('${h.id}','${yestStr}')"><span class="ck"></span></label>
+                            </div>
+                        </div>
 
-                        <!-- TODAY GROUP -->
-                        <div class="day-group">
-                            <span class="day-group-label">TODAY</span>
-                            ${!isPers ? `
-                            <div class="control-item"><span class="score-tiny">Hrs</span>
-                                <input type="number" step="0.5" class="num-input" value="${h.timeLogs[todayStr] || 0}" onchange="logVal('${h.id}', 'time', this.value, '${todayStr}')">
-                            </div>` : ''}
-                            ${h.category === 'Q Practice' ? `
-                            <div class="control-item"><span class="score-tiny">Qs</span>
-                                <input type="number" class="num-input" value="${h.qLogs[todayStr] || 0}" onchange="logVal('${h.id}', 'q', this.value, '${todayStr}')">
-                            </div>` : ''}
-                            <div class="control-item"><span class="score-tiny">Done</span>
-                                <label class="cb"><input type="checkbox" ${h.completions.includes(todayStr)?'checked':''} onchange="toggle('${h.id}','${todayStr}')"><span class="ck"></span></label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div id="edit-${h.id}" class="edit-panel">
-                    <input type="text" value="${h.name}" onchange="editH('${h.id}','name',this.value)" style="flex:2">
-                    <select onchange="editH('${h.id}','subject',this.value)">
-                        ${Object.keys(colors).map(s => `<option ${h.subject===s?'selected':''}>${s}</option>`).join('')}
-                    </select>
-                    <button onclick="delH('${h.id}')" style="background:var(--danger); color:white; border:none; border-radius:8px; padding:10px 15px; cursor:pointer; font-weight:700;">Delete</button>
-                </div>
-                <button onclick="document.getElementById('edit-${h.id}').classList.toggle('active')" style="background:none; border:none; color:var(--secondary); font-size:0.7rem; cursor:pointer; margin-top:12px; font-weight:700; padding:0;">⚙️ EDIT TASK</button>
-            </div>`;
-        };
+                        <!-- TODAY GROUP -->
+                        <div class="day-group">
+                            <span class="day-group-label">TODAY</span>
+                            <div class="control-item"><span class="score-tiny">Hrs</span>
+                                <input type="number" step="0.5" class="num-input" value="${h.timeLogs[todayStr] || 0}" onchange="logVal('${h.id}', 'time', this.value, '${todayStr}')">
+                            </div>
+                            ${h.category === 'Q Practice' ? `
+                            <div class="control-item"><span class="score-tiny">Qs</span>
+                                <input type="number" class="num-input" value="${h.qLogs[todayStr] || 0}" onchange="logVal('${h.id}', 'q', this.value, '${todayStr}')">
+                            </div>` : ''}
+                            <div class="control-item"><span class="score-tiny">Done</span>
+                                <label class="cb"><input type="checkbox" ${h.completions.includes(todayStr)?'checked':''} onchange="toggle('${h.id}','${todayStr}')"><span class="ck"></span></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="edit-${h.id}" class="edit-panel">
+                    <input type="text" value="${h.name}" onchange="editH('${h.id}','name',this.value)" style="flex:2">
+                    <select onchange="editH('${h.id}','subject',this.value)">
+                        ${Object.keys(colors).map(s => `<option ${h.subject===s?'selected':''}>${s}</option>`).join('')}
+                    </select>
+                    <button onclick="delH('${h.id}')" style="background:var(--danger); color:white; border:none; border-radius:8px; padding:10px 15px; cursor:pointer; font-weight:700;">Delete</button>
+                </div>
+                <button onclick="document.getElementById('edit-${h.id}').classList.toggle('active')" style="background:none; border:none; color:var(--secondary); font-size:0.7rem; cursor:pointer; margin-top:12px; font-weight:700; padding:0;">⚙️ EDIT TASK</button>
+            </div>`;
+        };
 
-        // Segregate Tasks
-        const groups = {
-            'Physics': habits.filter(h => h.subject === 'Physics' && h.category !== 'Health' && h.category !== 'Personal'),
-            'Chemistry': habits.filter(h => h.subject === 'Chemistry' && h.category !== 'Health' && h.category !== 'Personal'),
-            'Mathematics': habits.filter(h => h.subject === 'Math' && h.category !== 'Health' && h.category !== 'Personal'),
-            'Health': habits.filter(h => h.category === 'Health'),
-            'Personal': habits.filter(h => h.category === 'Personal'),
-            'Other': habits.filter(h => h.subject === 'Other' && h.category !== 'Health' && h.category !== 'Personal')
-        };
+        // Segregate Tasks
+        const groups = {
+            'Physics': habits.filter(h => h.subject === 'Physics' && h.category !== 'Health' && h.category !== 'Personal'),
+            'Chemistry': habits.filter(h => h.subject === 'Chemistry' && h.category !== 'Health' && h.category !== 'Personal'),
+            'Mathematics': habits.filter(h => h.subject === 'Math' && h.category !== 'Health' && h.category !== 'Personal'),
+            'Health': habits.filter(h => h.category === 'Health'),
+            'Personal': habits.filter(h => h.category === 'Personal'),
+            'Other': habits.filter(h => h.subject === 'Other' && h.category !== 'Health' && h.category !== 'Personal')
+        };
 
-        let listHtml = '';
-        const sections = ['Physics', 'Chemistry', 'Mathematics', 'Health', 'Personal', 'Other'];
+        let listHtml = '';
+        const sections = ['Physics', 'Chemistry', 'Mathematics', 'Health', 'Personal', 'Other'];
 
-        sections.forEach(sec => {
-            if (groups[sec] && groups[sec].length > 0) {
-                listHtml += `<div class="section-title">${sec}</div>`;
-                listHtml += groups[sec].map(createCard).join('');
-            }
-        });
+        sections.forEach(sec => {
+            if (groups[sec] && groups[sec].length > 0) {
+                listHtml += `<div class="section-title">${sec}</div>`;
+                listHtml += groups[sec].map(createCard).join('');
+            }
+        });
 
-        if (!listHtml && habits.length > 0) listHtml = habits.map(createCard).join('');
+        if (!listHtml && habits.length > 0) listHtml = habits.map(createCard).join('');
 
-        list.innerHTML = listHtml;
-        updateScores();
-    }
+        list.innerHTML = listHtml;
+        updateScores();
+    }
 
-    function drawChart(id, type, labels, data, color) {
-        if (activeCharts[id]) activeCharts[id].destroy();
-        const ctx = document.getElementById(id).getContext('2d');
-        activeCharts[id] = new Chart(ctx, {
-            type,
-            data: { 
-                labels, 
-                datasets: [{ 
-                    data, 
-                    borderColor: Array.isArray(color) ? color : color,
-                    backgroundColor: Array.isArray(color) ? color.map(c => c + 'cc') : color + '20', 
-                    fill: true, tension: 0.4, borderRadius: 6
-                }] 
-            },
-            options: { 
-                responsive: true,
-                plugins: { legend: false }, 
-                scales: { y: { beginAtZero: true, grid: { color: 'rgba(100,100,100,0.1)' } }, x: { grid: { display: false } } } 
-            }
-        });
-    }
+    function drawChart(id, type, labels, data, color) {
+        if (activeCharts[id]) activeCharts[id].destroy();
+        const ctx = document.getElementById(id).getContext('2d');
+        activeCharts[id] = new Chart(ctx, {
+            type,
+            data: { 
+                labels, 
+                datasets: [{ 
+                    data, 
+                    borderColor: Array.isArray(color) ? color : color,
+                    backgroundColor: Array.isArray(color) ? color.map(c => c + 'cc') : color + '20', 
+                    fill: true, tension: 0.4, borderRadius: 6
+                }] 
+            },
+            options: { 
+                responsive: true,
+                plugins: { legend: false }, 
+                scales: { y: { beginAtZero: true, grid: { color: 'rgba(100,100,100,0.1)' } }, x: { grid: { display: false } } } 
+            }
+        });
+    }
 
-    function renderCharts() {
-        const selectedMonth = parseInt(document.getElementById('month-filter').value);
-        const year = new Date().getFullYear();
+    function renderCharts() {
+        const selectedMonth = parseInt(document.getElementById('month-filter').value);
+        const year = new Date().getFullYear();
 
-        const grid = document.getElementById('dot-grid'); grid.innerHTML = '';
-        for (let i = 0; i < 365; i++) {
-            const d = new Date(year, 0, 1); d.setDate(d.getDate() + i);
-            const count = habits.filter(h => h.completions.includes(getTodayStr(d))).length;
-            grid.innerHTML += `<div class="dot" style="background:${count > 0 ? 'var(--accent)' : 'var(--h0)'}; opacity:${count > 0 ? 0.3 + (count * 0.2) : 1}"></div>`;
-        }
+        const grid = document.getElementById('dot-grid'); grid.innerHTML = '';
+        for (let i = 0; i < 365; i++) {
+            const d = new Date(year, 0, 1); d.setDate(d.getDate() + i);
+            const count = habits.filter(h => h.completions.includes(getTodayStr(d))).length;
+            grid.innerHTML += `<div class="dot" style="background:${count > 0 ? 'var(--accent)' : 'var(--h0)'}; opacity:${count > 0 ? 0.3 + (count * 0.2) : 1}"></div>`;
+        }
 
-        const daysInMonth = new Date(year, selectedMonth + 1, 0).getDate();
-        const mLabels = Array.from({length: daysInMonth}, (_, i) => i + 1);
-        const mData = mLabels.map(day => {
-            let ds = getTodayStr(new Date(year, selectedMonth, day));
-            return habits.filter(h => h.completions.includes(ds)).length;
-        });
-        drawChart('chart-monthly', 'line', mLabels, mData, '#8b5cf6');
+        const daysInMonth = new Date(year, selectedMonth + 1, 0).getDate();
+        const mLabels = Array.from({length: daysInMonth}, (_, i) => i + 1);
+        const mData = mLabels.map(day => {
+            let ds = getTodayStr(new Date(year, selectedMonth, day));
+            return habits.filter(h => h.completions.includes(ds)).length;
+        });
+        drawChart('chart-monthly', 'line', mLabels, mData, '#8b5cf6');
 
-        const subHours = { Physics: 0, Chemistry: 0, Math: 0, Other: 0 };
-        const subQs = { Physics: 0, Chemistry: 0, Math: 0, Other: 0 };
-        
-        habits.forEach(h => {
-            Object.keys(h.timeLogs).forEach(date => {
-                let d = new Date(date);
-                if (d.getMonth() === selectedMonth) subHours[h.subject] += h.timeLogs[date];
-            });
-            Object.keys(h.qLogs).forEach(date => {
-                let d = new Date(date);
-                if (d.getMonth() === selectedMonth) subQs[h.subject] += h.qLogs[date];
-            });
-        });
+        const subHours = { Physics: 0, Chemistry: 0, Math: 0, Other: 0 };
+        const subQs = { Physics: 0, Chemistry: 0, Math: 0, Other: 0 };
+        
+        habits.forEach(h => {
+            Object.keys(h.timeLogs).forEach(date => {
+                let d = new Date(date);
+                if (d.getMonth() === selectedMonth) subHours[h.subject] += h.timeLogs[date];
+            });
+            Object.keys(h.qLogs).forEach(date => {
+                let d = new Date(date);
+                if (d.getMonth() === selectedMonth) subQs[h.subject] += h.qLogs[date];
+            });
+        });
 
-        const bgCols = Object.keys(subHours).map(s => colors[s]);
-        drawChart('chart-time', 'bar', Object.keys(subHours), Object.values(subHours), bgCols);
-        drawChart('chart-qs', 'bar', Object.keys(subQs), Object.values(subQs), bgCols);
-    }
+        const bgCols = Object.keys(subHours).map(s => colors[s]);
+        drawChart('chart-time', 'bar', Object.keys(subHours), Object.values(subHours), bgCols);
+        drawChart('chart-qs', 'bar', Object.keys(subQs), Object.values(subQs), bgCols);
+    }
 
-    function logVal(id, type, val, dateStr) {
-        const h = habits.find(x => x.id === id);
-        const n = parseFloat(val) || 0;
-        
-        // Save the log
-        if (type === 'time') h.timeLogs[dateStr] = n; 
-        else h.qLogs[dateStr] = n;
-        
-        // Validation for auto-checking
-        const hrs = h.timeLogs[dateStr] || 0;
-        const qs = h.qLogs[dateStr] || 0;
-        const isDone = h.completions.includes(dateStr);
-        
-        // Only auto-check if NOT already done and inputs are valid > 0
-        if (!isDone) {
-            if (h.category === 'Q Practice') {
-                if (hrs > 0 && qs > 0) h.completions.push(dateStr);
-            } else if (h.category === 'Personal') {
-                // Do not auto-check personal, it requires manual check
-            } else {
-                // Standard Study/Health/Other -> Requires Hours > 0
-                if (hrs > 0) h.completions.push(dateStr);
-            }
-        }
-        
-        save();
-    }
+    function logVal(id, type, val, dateStr) {
+        const h = habits.find(x => x.id === id);
+        const n = parseFloat(val) || 0;
+        if (type === 'time') h.timeLogs[dateStr] = n; else h.qLogs[dateStr] = n;
+        
+        // Auto-check the box if a value > 0 is entered
+        if (n > 0 && !h.completions.includes(dateStr)) h.completions.push(dateStr);
+        save();
+    }
 
-    function toggle(id, ds) {
-        const h = habits.find(x => x.id === id);
-        const idx = h.completions.indexOf(ds);
-        
-        // If checking (turning ON)
-        if (idx === -1) {
-            const hrs = h.timeLogs[ds] || 0;
-            const qs = h.qLogs[ds] || 0;
+    function toggle(id, ds) {
+        const h = habits.find(x => x.id === id);
+        const idx = h.completions.indexOf(ds);
+        idx > -1 ? h.completions.splice(idx, 1) : h.completions.push(ds);
+        save();
+    }
 
-            // Logic 1: Q Practice needs Time AND Questions
-            if (h.category === 'Q Practice') {
-                if (hrs <= 0 || qs <= 0) {
-                    alert("For Q Practice, you must enter both Hours and Number of Questions!");
-                    render(); // Re-render to uncheck the box visually
-                    return;
-                }
-            } 
-            // Logic 2: Personal needs nothing (pass)
-            // Logic 3: Everything else (Study, Health) needs Time
-            else if (h.category !== 'Personal') {
-                if (hrs <= 0) {
-                    alert("Please input the number of hours first!");
-                    render(); // Re-render to uncheck
-                    return;
-                }
-            }
-            // If passed, push
-            h.completions.push(ds);
-        } else {
-            // Unchecking is always allowed
-            h.completions.splice(idx, 1);
-        }
-        save();
-    }
+    function updateScores() {
+        const todayStr = getTodayStr();
+        const done = habits.filter(h => h.completions.includes(todayStr)).length;
+        let tQ = 0, tH = 0;
+        habits.forEach(h => {
+            tQ += Object.values(h.qLogs).reduce((a,b)=>a+b, 0);
+            tH += Object.values(h.timeLogs).reduce((a,b)=>a+b, 0);
+        });
+        document.getElementById('score-day').innerText = habits.length ? Math.round(done/habits.length*100) + '%' : '0%';
+        document.getElementById('score-qs').innerText = tQ;
+        document.getElementById('score-hrs').innerText = tH.toFixed(1);
+        document.getElementById('score-streak').innerText = calculateStreak();
+    }
 
-    function updateScores() {
-        const todayStr = getTodayStr();
-        const done = habits.filter(h => h.completions.includes(todayStr)).length;
-        let tQ = 0, tH = 0;
-        habits.forEach(h => {
-            tQ += Object.values(h.qLogs).reduce((a,b)=>a+b, 0);
-            tH += Object.values(h.timeLogs).reduce((a,b)=>a+b, 0);
-        });
-        document.getElementById('score-day').innerText = habits.length ? Math.round(done/habits.length*100) + '%' : '0%';
-        document.getElementById('score-qs').innerText = tQ;
-        document.getElementById('score-hrs').innerText = tH.toFixed(1);
-        document.getElementById('score-streak').innerText = calculateStreak();
-    }
+    function calculateStreak() {
+        let s = 0; let d = new Date();
+        while(true) {
+            let ds = getTodayStr(d);
+            if (habits.some(h => h.completions.includes(ds))) { s++; d.setDate(d.getDate()-1); }
+            else break;
+        }
+        return s;
+    }
 
-    function calculateStreak() {
-        let s = 0; let d = new Date();
-        while(true) {
-            let ds = getTodayStr(d);
-            if (habits.some(h => h.completions.includes(ds))) { s++; d.setDate(d.getDate()-1); }
-            else break;
-        }
-        return s;
-    }
+    function showTab(t, btn) {
+        document.getElementById('tab-tasks').classList.toggle('hidden', t !== 'tasks');
+        document.getElementById('tab-stats').classList.toggle('hidden', t !== 'stats');
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if (t === 'stats') renderCharts();
+    }
 
-    function showTab(t, btn) {
-        document.getElementById('tab-tasks').classList.toggle('hidden', t !== 'tasks');
-        document.getElementById('tab-stats').classList.toggle('hidden', t !== 'stats');
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        if (t === 'stats') renderCharts();
-    }
+    function populateMonthFilter() {
+        const select = document.getElementById('month-filter');
+        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        select.innerHTML = months.map((m, i) => `<option value="${i}" ${i === new Date().getMonth() ? 'selected' : ''}>${m}</option>`).join('');
+    }
 
-    function populateMonthFilter() {
-        const select = document.getElementById('month-filter');
-        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-        select.innerHTML = months.map((m, i) => `<option value="${i}" ${i === new Date().getMonth() ? 'selected' : ''}>${m}</option>`).join('');
-    }
+    function editH(id, k, v) { habits.find(x => x.id === id)[k] = v; save(); }
+    function delH(id) { if(confirm('Delete?')) { habits = habits.filter(x => x.id !== id); save(); } }
+    
+    function toggleTheme() {
+        const t = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.body.setAttribute('data-theme', t);
+        localStorage.setItem('todo_theme', t);
+    }
 
-    function editH(id, k, v) { habits.find(x => x.id === id)[k] = v; save(); }
-    function delH(id) { if(confirm('Delete?')) { habits = habits.filter(x => x.id !== id); save(); } }
-    
-    function toggleTheme() {
-        const t = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-        document.body.setAttribute('data-theme', t);
-        localStorage.setItem('todo_theme', t);
-    }
-
-    if (localStorage.getItem('todo_theme') === 'dark') document.body.setAttribute('data-theme', 'dark');
-    populateMonthFilter();
-    render();
+    if (localStorage.getItem('todo_theme') === 'dark') document.body.setAttribute('data-theme', 'dark');
+    populateMonthFilter();
+    render();
 </script>
 </body>
-</html> 
+</html>
